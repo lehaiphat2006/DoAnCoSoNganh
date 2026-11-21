@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using WebDoAn.Data;
 
@@ -6,6 +7,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("DoAnCoSoNganhConnection")));
+// ----- 3 khối mới -----
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/DangNhap";
+        options.AccessDeniedPath = "/Account/TuChoi";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
+builder.Services.AddAuthorization();
+// -----------------------
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -19,6 +31,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();   // dòng mới, đặt TRƯỚC UseAuthorization
 app.UseAuthorization();
 
 app.MapStaticAssets();
